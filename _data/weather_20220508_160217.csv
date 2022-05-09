@@ -1,0 +1,59 @@
+name;dt_utc;temp;clouds;pop;wind_speed;wind_deg;wind_gust;weather_id;weather_main;weather_description
+current;08.05.2022 14:02:16;14.93;8;0;3.19;335;3.61;800;Clear;Klarer Himmel
+hourly;08.05.2022 14:00:00;14.93;8;0;3.19;335;3.61;800;Clear;Klarer Himmel
+hourly;08.05.2022 15:00:00;14.49;7;0;2.95;347;3.74;800;Clear;Klarer Himmel
+hourly;08.05.2022 16:00:00;13.98;6;0;2.81;354;3.81;800;Clear;Klarer Himmel
+hourly;08.05.2022 17:00:00;13.05;6;0;2.4;350;3.32;800;Clear;Klarer Himmel
+hourly;08.05.2022 18:00:00;10.75;6;0;2.3;358;2.59;800;Clear;Klarer Himmel
+hourly;08.05.2022 19:00:00;7.5;9;0;1.99;27;1.99;800;Clear;Klarer Himmel
+hourly;08.05.2022 20:00:00;6.79;10;0;2.48;65;2.76;800;Clear;Klarer Himmel
+hourly;08.05.2022 21:00:00;6.17;10;0;2.85;85;3.43;800;Clear;Klarer Himmel
+hourly;08.05.2022 22:00:00;5.69;11;0;3;97;4.06;801;Clouds;Ein paar Wolken
+hourly;08.05.2022 23:00:00;5.27;12;0;2.98;105;4.1;801;Clouds;Ein paar Wolken
+hourly;09.05.2022 00:00:00;5.05;13;0;2.84;107;3.78;801;Clouds;Ein paar Wolken
+hourly;09.05.2022 01:00:00;4.83;20;0;2.82;106;3.6;801;Clouds;Ein paar Wolken
+hourly;09.05.2022 02:00:00;4.57;21;0;2.9;107;3.76;801;Clouds;Ein paar Wolken
+hourly;09.05.2022 03:00:00;4.27;31;0;2.87;108;3.39;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 04:00:00;4.37;38;0;2.92;113;4.29;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 05:00:00;6;44;0;2.9;119;6.74;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 06:00:00;8.19;49;0;4.26;128;7.41;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 07:00:00;10.22;45;0;4.51;132;6.81;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 08:00:00;11.95;36;0;4.48;136;6.47;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 09:00:00;13.4;27;0;4.56;136;6.12;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 10:00:00;14.6;25;0;4.62;137;5.87;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 11:00:00;15.61;23;0;4.49;135;5.46;801;Clouds;Ein paar Wolken
+hourly;09.05.2022 12:00:00;16.3;25;0;4.28;137;5.2;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 13:00:00;16.78;68;0;4.01;135;5.01;803;Clouds;Überwiegend bewölkt
+hourly;09.05.2022 14:00:00;17.15;50;0;3.62;133;4.7;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 15:00:00;17.2;41;0;3.73;132;4.94;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 16:00:00;16.86;33;0;3.68;129;5.02;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 17:00:00;15.67;28;0;3.31;126;5.64;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 18:00:00;13.4;36;0;3.18;124;5.31;802;Clouds;Mäßig bewölkt
+hourly;09.05.2022 19:00:00;11.27;100;0;3.52;126;5.82;804;Clouds;Bedeckt
+hourly;09.05.2022 20:00:00;10.28;100;0;3.8;134;7.75;804;Clouds;Bedeckt
+hourly;09.05.2022 21:00:00;9.53;100;0;3.83;140;7.33;804;Clouds;Bedeckt
+hourly;09.05.2022 22:00:00;9.09;100;0;3.76;154;6.67;804;Clouds;Bedeckt
+hourly;09.05.2022 23:00:00;8.87;100;0;3.88;162;8.46;804;Clouds;Bedeckt
+hourly;10.05.2022 00:00:00;9.1;100;0;3.79;165;10.12;804;Clouds;Bedeckt
+hourly;10.05.2022 01:00:00;8.58;100;0;3.88;164;10.11;804;Clouds;Bedeckt
+hourly;10.05.2022 02:00:00;8.47;100;0;3.83;175;8.7;804;Clouds;Bedeckt
+hourly;10.05.2022 03:00:00;8.53;100;0;3.84;177;9.2;804;Clouds;Bedeckt
+hourly;10.05.2022 04:00:00;8.78;100;0;4.18;174;10.33;804;Clouds;Bedeckt
+hourly;10.05.2022 05:00:00;10.24;100;0;4.61;179;10.79;804;Clouds;Bedeckt
+hourly;10.05.2022 06:00:00;11.65;100;0;5.04;181;10.9;804;Clouds;Bedeckt
+hourly;10.05.2022 07:00:00;13.41;100;0;5.62;187;9.95;804;Clouds;Bedeckt
+hourly;10.05.2022 08:00:00;14.69;100;0;5.69;194;9.65;804;Clouds;Bedeckt
+hourly;10.05.2022 09:00:00;16.57;100;0;5.9;207;9.06;804;Clouds;Bedeckt
+hourly;10.05.2022 10:00:00;17.98;100;0;6.02;214;8.79;804;Clouds;Bedeckt
+hourly;10.05.2022 11:00:00;18.89;100;0;6.32;226;9.25;804;Clouds;Bedeckt
+hourly;10.05.2022 12:00:00;19.2;100;0.2;6.63;233;9.54;500;Rain;Leichter Regen
+hourly;10.05.2022 13:00:00;19.79;100;0.4;6.36;232;10.43;804;Clouds;Bedeckt
+daily;08.05.2022 11:00:00;10.005;12;0;4.73;311;7.84;801;Clouds;Ein paar Wolken
+daily;09.05.2022 11:00:00;10.735;23;0;4.62;137;7.75;801;Clouds;Ein paar Wolken
+daily;10.05.2022 11:00:00;14.13;100;1;7.54;282;13.69;500;Rain;Leichter Regen
+daily;11.05.2022 11:00:00;13.295;99;0.89;8.28;244;15.64;500;Rain;Leichter Regen
+daily;12.05.2022 11:00:00;12.18;33;0.59;7.92;281;15.32;500;Rain;Leichter Regen
+daily;13.05.2022 11:00:00;11.885;36;0.64;7.5;257;13.11;500;Rain;Leichter Regen
+daily;14.05.2022 11:00:00;9.24;33;0.29;10.67;287;15.69;500;Rain;Leichter Regen
+daily;15.05.2022 11:00:00;10.25;7;0;9.13;305;13.11;800;Clear;Klarer Himmel
+

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32228.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wetter_uhr", "wetter_uhr\wetter_uhr.csproj", "{2303484C-A387-4CB1-8B85-C963F0DE112D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2303484C-A387-4CB1-8B85-C963F0DE112D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2303484C-A387-4CB1-8B85-C963F0DE112D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2303484C-A387-4CB1-8B85-C963F0DE112D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2303484C-A387-4CB1-8B85-C963F0DE112D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2D9DD61B-C152-46C7-A331-8A397C49057A}
+	EndGlobalSection
+EndGlobal
