@@ -1,4 +1,6 @@
-﻿// =====================================================================
+﻿#pragma warning disable CS1692
+#pragma warning disable CS0414
+// =====================================================================
 // File:          openweather_classes.cs
 // Author:        Michael Bröde
 // Created:       02.04.2019
@@ -227,7 +229,7 @@ namespace openweather_classes
                     sb.AppendLine(item.csv);
                 }
                 CGeneral.SetTextToFile(_csvfile, sb.ToString());
-                CGeneral.SetTextToFile(string.Format(_csvbakfile, DateTime.Now), sb.ToString());
+                //CGeneral.SetTextToFile(string.Format(_csvbakfile, DateTime.Now), sb.ToString());
             }
             catch (Exception ex)
             {

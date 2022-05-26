@@ -172,28 +172,22 @@ namespace wetter_uhr_classes
     // =================================================================
     class CMyWeather
     {
-        private DateTime? _time;
-        private int _temp;
-        private int _clouds;
-        private int _pop;
-        private int _wind_bft;
-        private int _wind_gust_bft;
-        private int _wind_deg;
-        private int _weather_id;
 
-        public DateTime? Time { get => _time; set => _time = value; }
-        public int Temp { get => _temp; set => _temp = value; }
-        public int Clouds { get => _clouds; set => _clouds = value; }
-        public int Pop { get => _pop; set => _pop = value; }
-        public int Wind_bft { get => _wind_bft; set => _wind_bft = value; }
-        public int Wind_gust_bft { get => _wind_gust_bft; set => _wind_gust_bft = value; }
-        public int Wind_deg { get => _wind_deg; set => _wind_deg = value; }
-        public int Weather_id { get => _weather_id; set => _weather_id = value; }
+        public string Mode { get; set; } // h=hourly, d=daily
+        public DateTime? Time { get; set; }
+        public int Temp { get; set; }
+        public int Clouds { get; set; }
+        public int Pop { get; set; }
+        public double Wind_ms { get; set; }
+        public int Wind_bft { get; set; }
+        public int Wind_gust_bft { get; set; }
+        public int Wind_deg { get; set; }
+        public int Weather_id { get; set; }
 
         public override string ToString()
         {
-            return string.Format("Time:{0} Temp:{1} Clouds:{2} Pop:{3} Wind_bft:{4} Wind_gust_bft:{5} Wind_deg:{6} Weather_id:{7}",
-                _time, _temp, _clouds, _pop, _wind_bft, _wind_gust_bft, _wind_deg, _weather_id);
+            return string.Format("Modus:{0} Time:{1} Temp:{2} Clouds:{3} Pop:{4} Wind_ms:{5:#0.00} Wind_bft:{6} Wind_gust_bft:{7} Wind_deg:{8} Weather_id:{9}",
+                Mode, Time, Temp, Clouds, Pop, Wind_ms, Wind_bft, Wind_gust_bft, Wind_deg, Weather_id);
         }
 
         public CMyWeather()
@@ -201,28 +195,18 @@ namespace wetter_uhr_classes
             Init();
         }
 
-        public CMyWeather(DateTime? time, int temp, int clouds, int pop, int wind_bft, int wind_gust_bft, int wind_deg, int weather_id)
-        {
-            _time = time;
-            _temp = temp;
-            _clouds = clouds;
-            _pop = pop;
-            _wind_bft = wind_bft;
-            _wind_gust_bft = wind_gust_bft;
-            _wind_deg = wind_deg;
-            _weather_id = weather_id;
-        }
-
         public void Init()
         {
-            _time = null;
-            _temp = 0;
-            _clouds = 0;
-            _pop = 0;
-            _wind_bft = 0;
-            _wind_gust_bft = 0;
-            _wind_deg = 0;
-            _weather_id = 0;
+            Mode = string.Empty;
+            Time = null;
+            Temp = 0;
+            Clouds = 0;
+            Pop = 0;
+            Wind_ms = 0d;
+            Wind_bft = 0;
+            Wind_gust_bft = 0;
+            Wind_deg = 0;
+            Weather_id = 0;
         }
     }
     #endregion
@@ -242,10 +226,14 @@ namespace wetter_uhr_classes
 
         private string _weatherCsvFile;
         private string _weatherLogFile;
-        private int _minuteNewWeatherCheckDone;
         private int _minutesCheckWeatherCycle;
+        private int _minuteWeatherChecked;
         private CMyWeather[] _weather;
         private CWeather_ID[] _weather_ids;
+        private double[] _t7days;
+        private double[] _n7days;
+        private double[] _w7days;
+        private double[] _ytemp;
 
         private int _tempMin;
         private int _tempMax;
@@ -254,7 +242,7 @@ namespace wetter_uhr_classes
         private int _rainMin;
         private int _rainMax;
 
-        // Hilfsvariablen (damit sie nicht immer neu deklariert werden müssen): 
+        // Hilfsvariablen
         private int len;
         private string s;
         private int x;
@@ -269,7 +257,6 @@ namespace wetter_uhr_classes
         private double diff;
         private int imax;
 
-
         public CWetterUhr(RGBLedMatrix matrix, RGBLedCanvas canvas)
         {
             _matrix = matrix;
@@ -282,9 +269,9 @@ namespace wetter_uhr_classes
 
             _weatherCsvFile = Path.Combine(CGeneral.OpenWeatherDir, "weather.csv");
             _weatherLogFile = Path.Combine(CGeneral.OpenWeatherDir, "weather_log.txt");
-            _minuteNewWeatherCheckDone = -1;
-            _minutesCheckWeatherCycle = 5; // Init = 5, Else = 15
-            _weather = new CMyWeather[12];
+            _minutesCheckWeatherCycle = 2;
+            _minuteWeatherChecked = -1;
+            _weather = new CMyWeather[20]; // 12 x hourly, 8 x daily
             for (int i = 0; i < _weather.Length; i++)
             {
                 _weather[i] = new CMyWeather();
@@ -347,6 +334,10 @@ namespace wetter_uhr_classes
                 new CWeather_ID(803, "Clouds", "broken clouds: 51-84%", "04d", CColor.RoyalBlue, 0),
                 new CWeather_ID(804, "Clouds", "overcast clouds: 85-100%", "04d", CColor.NavyBlue, 0)
             };
+            _t7days = new double[8];
+            _n7days = new double[8];
+            _w7days = new double[8];
+            _ytemp = new double[8];
         }
 
         public void Run()
@@ -355,21 +346,22 @@ namespace wetter_uhr_classes
             {
                 // Init
                 base.SetTimeParts();
-                GetMyWeather();
+                GetMyWeather();               
                 GetMinMaxValues();
 
                 _canvas.Fill(CColor.Black);
+
+                // Wetter
+                if (sec >= 0 && sec < 12) DrawTemperature();
+                if (sec >= 12 && sec < 24) DrawRainfall();
+                if (sec >= 24 && sec < 36) DrawWind();
+                if (sec >= 36 && sec < 48) DrawSummary();
+                if (sec >= 48 && sec < 60) Draw7DaysPreview();
 
                 // Uhrzeit
                 _hourColumn.Show(base.hour);
                 _minuteColumn.Show(base.min);
                 _secondColumn.Show(base.sec);
-
-                // Wetter
-                if (sec >= 0 && sec < 15) DrawTemperature();
-                if (sec >= 15 && sec < 30) DrawRainfall();
-                if (sec >= 30 && sec < 45) DrawWind();
-                if (sec >= 45 && sec < 60) DrawSummary();
 
                 // Anzeige auf LED-Panel
                 _canvas = _matrix.SwapOnVsync(_canvas);
@@ -381,35 +373,118 @@ namespace wetter_uhr_classes
         #region - MyWeather -
         private void GetMyWeather()
         {
-            if ((base.min % _minutesCheckWeatherCycle == 0 && _minuteNewWeatherCheckDone != base.min) || _minuteNewWeatherCheckDone == -1)
+            if ((base.min % _minutesCheckWeatherCycle == 0 && _minuteWeatherChecked != base.min) || _minuteWeatherChecked == -1)
             {
+                _minuteWeatherChecked = base.min;
+
                 if (PopulateMyWeatherArray())
                 {
+                    Populate7DaysPreviewData();
                     //for (int i = 0; i < _weather.Length; i++)
                     //{
                     //    DebugPrint(String.Format("{0:00} {1}", i, _weather[i]));
                     //}
+                    //DebugPrint("DONE PopulateMyWeatherArray");
+
                     _minutesCheckWeatherCycle = 15;
                 }
                 else
                 {
-                    _minutesCheckWeatherCycle = 5;
+                    _minutesCheckWeatherCycle = 2;
                 }
-                _minuteNewWeatherCheckDone = base.min;
+            }
+        }
+
+        private void Populate7DaysPreviewData()
+        {
+            //     y
+            //
+            //     9  |-------
+            //        |
+            //        |
+            // T  17 -+
+            //        |
+            //        |
+            //    25  |-------
+            //        |
+            //        |
+            // N  32 -+
+            //        |
+            //        |
+            //    39  |-------
+            //        |
+            //        |
+            // W  46 -+
+            //        |
+            //        |
+            //    53  |-------
+
+            double maxY;
+
+            // daily-Items Idx: 12 ... 19 
+            // T
+            maxY = 0;
+            for (int i = 12, j = 0; i <= 19; i++, j++)
+            {
+                _t7days[j] = _weather[i].Temp;
+            }
+            _ytemp[0] = 0d;
+            for (int i = 1; i < 8; i++)
+            {
+                _ytemp[i] = _t7days[i] - _t7days[0];
+            }
+            foreach (var v in _ytemp) if (Math.Abs(v) > maxY) maxY = Math.Abs(v);
+            for (int i = 0; i < 8; i++)
+            {
+                _t7days[i] = 17d - 8d / maxY * _ytemp[i]; // T: y=17
+            }
+
+            // N
+            maxY = 0;
+            for (int i = 12, j = 0; i <= 19; i++, j++)
+            {
+                _n7days[j] = _weather[i].Pop;
+            }
+            _ytemp[0] = 0d;
+            for (int i = 1; i < 8; i++)
+            {
+                _ytemp[i] = _n7days[i] - _n7days[0];
+            }
+            foreach (var v in _ytemp) if (Math.Abs(v) > maxY) maxY = Math.Abs(v);
+            for (int i = 0; i < 8; i++)
+            {
+                _n7days[i] = 32d - 5d / maxY * _ytemp[i]; // N: y=32
+            }
+
+            // W
+            maxY = 0;
+            for (int i = 12, j = 0; i <= 19; i++, j++)
+            {
+                _w7days[j] = _weather[i].Wind_bft;
+            }
+            _ytemp[0] = 0d;
+            for (int i = 1; i < 8; i++)
+            {
+                _ytemp[i] = _w7days[i] - _w7days[0];
+            }
+            foreach (var v in _ytemp) if (Math.Abs(v) > maxY) maxY = Math.Abs(v);
+            for (int i = 0; i < 8; i++)
+            {
+                _w7days[i] = 46d - 5d / maxY * _ytemp[i]; // W: y=46
             }
         }
 
         private bool PopulateMyWeatherArray()
         {
-            double d;
             int start;
             DateTime dt;
             string[] token;
             string[] lines = null;
 
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 20; i++)
             {
                 _weather[i].Init();
+                _weather[i].Mode = i < 12 ? "h" : "d";
             }
 
             try
@@ -445,47 +520,74 @@ namespace wetter_uhr_classes
                     return false;
                 }
 
+                // hourly
                 for (int i = 0; i < 12; i++)
                 {
-                    // 0        1                    2      3       4     5         6          7           8           9             10
-                    // name;    dt_utc;              temp;  clouds; pop;  wind_speed; wind_deg; wind_gust; weather_id; weather_main; weather_description
-                    // current; 03.08.2021 06:06:14; 15,23; 82;     0,71; 3,96;       261;      6,71;      803;        Clouds;       Überwiegend bewölkt
-                    // hourly;  03.08.2021 06:00:00; 15,23; 82;     0,72; 3,96;       261;      6,71;      803;        Clouds;       Überwiegend bewölkt
-                    // hourly;  03.08.2021 07:00:00; 15,11; 86;     0,72; 3,96;       268;      6,16;      804;        Clouds;       Bedeckt
-                    // ...
                     if ((start + i) >= lines.Length || lines[start + i].IndexOf("hourly") == -1)
                     {
                         break;
                     }
                     token = lines[start + i].Split(';');
-                    // time
-                    dt = CGeneral.StrToDateTime(token[1]); // UTC
-                    _weather[i].Time = dt.ToLocalTime();
-                    // temp
-                    d = Convert.ToDouble(token[2]);
-                    _weather[i].Temp = Convert.ToInt32(Math.Round(d, 0));
-                    // cloud
-                    _weather[i].Clouds = Convert.ToInt32(token[3]);
-                    // pop
-                    d = Convert.ToDouble(token[4]);
-                    _weather[i].Pop = Convert.ToInt32(d * 100);
-                    // wind_bft;
-                    d = Convert.ToDouble(token[5]);
-                    _weather[i].Wind_bft = ConvertMetrePerSecondToBeaufort(d);
-                    // wind_gust_bft;
-                    d = Convert.ToDouble(token[7]);
-                    _weather[i].Wind_gust_bft = ConvertMetrePerSecondToBeaufort(d);
-                    // wind_deg;
-                    _weather[i].Wind_deg = Convert.ToInt32(token[6]);
-                    // weather_id;
-                    _weather[i].Weather_id = Convert.ToInt32(token[8]);
+                    CsvTokenToWeather("m", token, ref _weather[i]);
+                }
+
+                // daily
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    if (lines[i].IndexOf("daily") == 0)
+                    {
+                        for (int j = 0; j < 8 && (i + j) < lines.Length; j++)
+                        {
+                            token = lines[i + j].Split(';');
+                            CsvTokenToWeather("d", token, ref _weather[12 + j]);
+                        }
+                        break;
+                    }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                DebugPrint("PopulateMyWeatherArray went wrong: " + ex.Message);
                 return false;
             }
             return true;
+        }
+
+        private void CsvTokenToWeather(string mode, string[] token, ref CMyWeather weather)
+        {
+            // 0        1                    2      3       4     5         6          7           8           9             10
+            // name;    dt_utc;              temp;  clouds; pop;  wind_speed; wind_deg; wind_gust; weather_id; weather_main; weather_description
+            // current; 03.08.2021 06:06:14; 15,23; 82;     0,71; 3,96;       261;      6,71;      803;        Clouds;       Überwiegend bewölkt
+            // hourly;  03.08.2021 06:00:00; 15,23; 82;     0,72; 3,96;       261;      6,71;      803;        Clouds;       Überwiegend bewölkt
+            // hourly;  03.08.2021 07:00:00; 15,11; 86;     0,72; 3,96;       268;      6,16;      804;        Clouds;       Bedeckt
+            // ...
+            DateTime dt;
+            double d;
+            // Mode
+            weather.Mode = mode;
+            // time
+            dt = CGeneral.StrToDateTime(token[1]); // UTC
+            weather.Time = dt.ToLocalTime();
+            // temp
+            d = Convert.ToDouble(token[2]);
+            weather.Temp = Convert.ToInt32(Math.Round(d, 0));
+            // cloud
+            weather.Clouds = Convert.ToInt32(token[3]);
+            // pop
+            d = Convert.ToDouble(token[4]);
+            weather.Pop = Convert.ToInt32(Math.Round(d * 10)) * 10; // auf nächstliegenden 10er gerundet
+            // wind_ms;
+            d = Convert.ToDouble(token[5]);
+            weather.Wind_ms = d;
+            // wind_bft;
+            weather.Wind_bft = ConvertMetrePerSecondToBeaufort(d);
+            // wind_gust_bft;
+            d = Convert.ToDouble(token[7]);
+            weather.Wind_gust_bft = ConvertMetrePerSecondToBeaufort(d);
+            // wind_deg;
+            weather.Wind_deg = Convert.ToInt32(token[6]);
+            // weather_id;
+            weather.Weather_id = Convert.ToInt32(token[8]);
         }
 
         private int ConvertMetrePerSecondToBeaufort(double windspeed)
@@ -944,14 +1046,234 @@ namespace wetter_uhr_classes
         }
         #endregion
 
+        private void Draw7DaysPreview()
+        {           
+            // Header
+            _canvas.DrawText(_font, 21, 8, CColor.Blue, "7 TAGE");
+
+            // T
+            _canvas.DrawText(_font, 15, 20, CColor.Blue, "T");
+            _canvas.DrawLine(21, 17, 22, 17, CColor.DarkDarkGrey2);
+
+            // N
+            _canvas.DrawText(_font, 15, 35, CColor.Blue, "N");
+            _canvas.DrawLine(21, 32, 22, 32, CColor.DarkDarkGrey2);
+
+            // W
+            _canvas.DrawText(_font, 15, 49, CColor.Blue, "W");
+            _canvas.DrawLine(21, 46, 22, 46, CColor.DarkDarkGrey2);
+
+            // Vertikales Gitter
+            x = 22;
+            for (int i = 0; i < 8; i++)
+            {
+                _canvas.DrawLine(
+                    x + (i * 5),
+                    57,
+                    x + (i * 5),
+                    9,
+                    CColor.DarkDarkGrey2);
+            }
+
+            // T + N + W
+            x = 22;
+            for (int i = 1; i < 8; i++)
+            {
+                _canvas.DrawLine(
+                    x + ((i - 1) * 5),
+                    Convert.ToInt32(Math.Round(_t7days[i - 1])),
+                    x + (i * 5),
+                    Convert.ToInt32(Math.Round(_t7days[i])),
+                    CColor.RoyalBlue);
+                _canvas.DrawLine(
+                    x + ((i - 1) * 5),
+                    Convert.ToInt32(Math.Round(_n7days[i - 1])),
+                    x + (i * 5),
+                    Convert.ToInt32(Math.Round(_n7days[i])),
+                    CColor.RoyalBlue);
+                _canvas.DrawLine(
+                    x + ((i - 1) * 5),
+                    Convert.ToInt32(Math.Round(_w7days[i - 1])),
+                    x + (i * 5),
+                    Convert.ToInt32(Math.Round(_w7days[i])),
+                    CColor.RoyalBlue);
+            }
+
+            // Windrichtung
+            for (int i = 12, j = 0; i <= 19; i++, j++)
+            {
+                DrawDailyWindDirection(j, _weather[i].Wind_deg);
+            }
+
+            DrawPageMarker(5);
+        }
+
+
+        private void DrawDailyWindDirection(int day, int d)
+        {
+            col = CColor.RoyalBlue;
+            // N
+            if ((d >= 0D && d < 22.5D) || (d >= 337.5D && d <= 360.0D))
+            {
+                // - - -
+                // O - O
+                // - O -
+                _canvas.DrawLine(
+                    21 + (day * 5),
+                    56,
+                    22 + (day * 5),
+                    57,
+                    col);
+                _canvas.DrawLine(
+                    23 + (day * 5),
+                    56,
+                    22 + (day * 5),
+                    57,
+                    col);
+            }
+            // NO
+            if (d >= 22.5D && d < 67.5D)
+            {
+                // - - -
+                // O - -
+                // O O -
+                _canvas.DrawLine(
+                    21 + (day * 5),
+                    56,
+                    21 + (day * 5),
+                    57,
+                    col);
+                _canvas.DrawLine(
+                    22 + (day * 5),
+                    57,
+                    21 + (day * 5),
+                    57,
+                    col);
+            }
+            // O
+            if (d >= 67.5D && d < 112.5D)
+            {
+                // - O -
+                // O - -
+                // - O -
+                _canvas.DrawLine(
+                    22 + (day * 5),
+                    55,
+                    21 + (day * 5),
+                    56,
+                    col);
+                _canvas.DrawLine(
+                    22 + (day * 5),
+                    57,
+                    21 + (day * 5),
+                    56,
+                    col);
+            }
+            // SO
+            if (d >= 112.5D && d < 157.5D)
+            {
+                // O O -
+                // O - -
+                // - - -
+                _canvas.DrawLine(
+                    22 + (day * 5),
+                    55,
+                    21 + (day * 5),
+                    55,
+                    col);
+                _canvas.DrawLine(
+                    21 + (day * 5),
+                    56,
+                    21 + (day * 5),
+                    55,
+                    col);
+            }
+            // S
+            if (d >= 157.5D && d < 202.5D)
+            {
+                // - O -
+                // O - O
+                // - - -
+                _canvas.DrawLine(
+                    21 + (day * 5),
+                    56,
+                    22 + (day * 5),
+                    55,
+                    col);
+                _canvas.DrawLine(
+                    23 + (day * 5),
+                    56,
+                    22 + (day * 5),
+                    55,
+                    col);
+            }
+            // SW
+            if (d >= 202.5D && d < 247.5D)
+            {
+                // - O O
+                // - - O
+                // - - -
+                _canvas.DrawLine(
+                    22 + (day * 5),
+                    55,
+                    23 + (day * 5),
+                    55,
+                    col);
+                _canvas.DrawLine(
+                    23 + (day * 5),
+                    56,
+                    23 + (day * 5),
+                    55,
+                    col);
+            }
+            // W
+            if (d >= 247.5D && d < 292.5D)
+            {
+                // - O -
+                // - - O
+                // - O -
+                _canvas.DrawLine(
+                    22 + (day * 5),
+                    55,
+                    23 + (day * 5),
+                    56,
+                    col);
+                _canvas.DrawLine(
+                    22 + (day * 5),
+                    57,
+                    23 + (day * 5),
+                    56,
+                    col);
+            }
+            // SW
+            if (d >= 292.5D && d < 337.5D)
+            {
+                // - - -
+                // - - O
+                // - O O
+                _canvas.DrawLine(
+                    23 + (day * 5),
+                    56,
+                    23 + (day * 5),
+                    57,
+                    col);
+                _canvas.DrawLine(
+                    22 + (day * 5),
+                    57,
+                    23 + (day * 5),
+                    57,
+                    col);
+            }
+        }
+
         #region - DrawPageMarker -
         private void DrawPageMarker(int number)
         {
-            x = 30;
+            x = 28;
             y = 60;
-            for (int i = 1; i <= 4; i++)
+            for (int i = 1; i <= 5; i++)
             {
-                col = number == i ? CColor.Blue : CColor.DarkDarkGrey2;
+                col = number == i ? CColor.Blue : CColor.DarkDarkGrey;
                 _canvas.DrawLine(x, y, x + 1, y, col);
                 _canvas.DrawLine(x, y - 1, x + 1, y - 1, col);
                 x += 3;

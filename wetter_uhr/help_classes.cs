@@ -142,6 +142,11 @@ namespace help_classes
         // ----------------------
         public CPoint(int x, int y)
         {
+            SetCoord(x, y);
+        }
+
+        public void SetCoord(int x, int y)
+        {
             _x = x;
             _y = y;
         }
